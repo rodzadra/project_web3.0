@@ -1,3 +1,5 @@
+/* eslint-disable react/jsx-no-constructed-context-values */
+/* eslint-disable consistent-return */
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 
@@ -10,16 +12,27 @@ const { ethereum } = window;
 const createEthereumContract = () => {
   const provider = new ethers.providers.Web3Provider(ethereum);
   const signer = provider.getSigner();
-  const transactionsContract = new ethers.Contract(contractAddress, contractABI, signer);
+  const transactionsContract = new ethers.Contract(
+    contractAddress,
+    contractABI,
+    signer
+  );
 
   return transactionsContract;
 };
 
 export const TransactionsProvider = ({ children }) => {
-  const [formData, setformData] = useState({ addressTo: "", amount: "", keyword: "", message: "" });
+  const [formData, setformData] = useState({
+    addressTo: "",
+    amount: "",
+    keyword: "",
+    message: "",
+  });
   const [currentAccount, setCurrentAccount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [transactionCount, setTransactionCount] = useState(localStorage.getItem("transactionCount"));
+  const [transactionCount, setTransactionCount] = useState(
+    localStorage.getItem("transactionCount")
+  );
   const [transactions, setTransactions] = useState([]);
 
   const handleChange = (e, name) => {
@@ -33,14 +46,18 @@ export const TransactionsProvider = ({ children }) => {
 
         const availableTransactions = await transactionsContract.getAllTransactions();
 
-        const structuredTransactions = availableTransactions.map((transaction) => ({
-          addressTo: transaction.receiver,
-          addressFrom: transaction.sender,
-          timestamp: new Date(transaction.timestamp.toNumber() * 1000).toLocaleString(),
-          message: transaction.message,
-          keyword: transaction.keyword,
-          amount: parseInt(transaction.amount._hex) / (10 ** 18)
-        }));
+        const structuredTransactions = availableTransactions.map(
+          (transaction) => ({
+            addressTo: transaction.receiver,
+            addressFrom: transaction.sender,
+            timestamp: new Date(
+              transaction.timestamp.toNumber() * 1000
+            ).toLocaleString(),
+            message: transaction.message,
+            keyword: transaction.keyword,
+            amount: parseInt(transaction.amount._hex, 10) / 10 ** 18,
+          })
+        );
 
         console.log(structuredTransactions);
 
@@ -77,7 +94,10 @@ export const TransactionsProvider = ({ children }) => {
         const transactionsContract = createEthereumContract();
         const currentTransactionCount = await transactionsContract.getTransactionCount();
 
-        window.localStorage.setItem("transactionCount", currentTransactionCount);
+        window.localStorage.setItem(
+          "transactionCount",
+          currentTransactionCount
+        );
       }
     } catch (error) {
       console.log(error);
@@ -90,7 +110,9 @@ export const TransactionsProvider = ({ children }) => {
     try {
       if (!ethereum) return alert("Please install MetaMask.");
 
-      const accounts = await ethereum.request({ method: "eth_requestAccounts", });
+      const accounts = await ethereum.request({
+        method: "eth_requestAccounts",
+      });
 
       setCurrentAccount(accounts[0]);
     } catch (error) {
@@ -109,15 +131,22 @@ export const TransactionsProvider = ({ children }) => {
 
         await ethereum.request({
           method: "eth_sendTransaction",
-          params: [{
-            from: currentAccount,
-            to: addressTo,
-            gas: "0x5208",
-            value: parsedAmount._hex,
-          }],
+          params: [
+            {
+              from: currentAccount,
+              to: addressTo,
+              gas: "0x5208",
+              value: parsedAmount._hex,
+            },
+          ],
         });
 
-        const transactionHash = await transactionsContract.addToBlockchain(addressTo, parsedAmount, message, keyword);
+        const transactionHash = await transactionsContract.addToBlockchain(
+          addressTo,
+          parsedAmount,
+          message,
+          keyword
+        );
 
         setIsLoading(true);
         console.log(`Loading - ${transactionHash.hash}`);

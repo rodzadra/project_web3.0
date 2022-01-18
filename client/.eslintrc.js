@@ -36,7 +36,7 @@ module.exports = {
     "no-underscore-dangle": [
       "error",
       {
-        allow: ["_d", "_dh", "_h", "_id", "_m", "_n", "_t", "_text"],
+        allow: ["_d", "_dh", "_h", "_id", "_m", "_n", "_t", "_text", "_hex"],
       },
     ],
     "object-curly-newline": 0,
